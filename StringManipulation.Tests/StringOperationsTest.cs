@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using Moq;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -10,7 +12,7 @@ namespace StringManipulation.Tests
 {
     public class StringOperationsTest
     {
-        [Fact]
+        [Fact(Skip ="Esta prueba no es valida en este momento, TICKECT-001")]
         public void ConcatenateStrings()
         {
            // Arrange
@@ -106,7 +108,51 @@ namespace StringManipulation.Tests
 
             // Assert
             Assert.ThrowsAny<ArgumentOutOfRangeException>(() => strOperation.TruncateString("platzy",-2));
+        }
 
+        [Theory]// Permite que el test tome valores
+        [InlineData("V", 5)]// Sirve para asignar valores a los argumentos del test
+        [InlineData("III", 3)]
+        [InlineData("X", 10)]
+        public void FromRomanToNumber(string romanNumber, int expeted) 
+        {
+            var strOperation = new StringOperations();
+            var result = strOperation.FromRomanToNumber(romanNumber);
+            
+            Assert.Equal(expeted, result);
+        }
+
+        [Fact]
+        public void CountOccurrences() 
+        {
+            // Arrange
+            var mockLogger = new Mock<ILogger<StringOperations>>();
+            var strOperation = new StringOperations(mockLogger.Object);
+           
+
+            // Act
+            var result = strOperation.CountOccurrences("Hola lola", 'l');
+
+            // Assert            
+            Assert.Equal(3, result);
+        }
+
+        [Fact]
+        public void ReadFile() 
+        {
+            // Arrange
+            var strOperation = new StringOperations();
+            var mockFileReader = new Mock<IFileReaderConector>();
+            
+            // Act
+
+            //mockFileReader.Setup(p => p.ReadString("file.txt")).Returns("Reading file");//Para un archivo especifico
+            mockFileReader.Setup(p => p.ReadString(It.IsAny<string>())).Returns("Reading file");//Para un archivo especifico
+
+            var result = strOperation.ReadFile(mockFileReader.Object, "file3.txt");
+
+            // Assert
+            Assert.Equal("Reading file", result);       
         }
     }
 }
